@@ -6,8 +6,8 @@ import TableHead from '@mui/material/TableHead';
 import TableBody from '@mui/material/TableBody';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
+import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles } from '@mui/styles';
-import axios from "axios";
 import { useState, useEffect } from 'react';
 
 const useStyles = makeStyles({
@@ -18,26 +18,32 @@ const useStyles = makeStyles({
   },
   table: {
     minWidth: 1080
+  },
+  progress: {
+    margin: '20px'
   }
 })
 
 
-function App(props) {
+function App() {
+  const [customers, setCustomers] = useState("");
+  const [completed, setCompleted] = useState(0);
 
-  const [state, setState] = useState({
-    customers: ""
-  });
-
-  async function callApi() {
+  const callApi= async () => {
     const res = await fetch('/api/customers');
-    const newState = { ...state };
-    newState.customers = await res.json();
-    setState(newState);
+    const body = await res.json();
+    return body;
   }
 
   useEffect(() => {
-    callApi();
-  });
+    const timer = setInterval(() => {
+      setCompleted(completed >= 100 ? 0 : completed + 1);
+    }, 20)
+    callApi().then(res => { setCustomers(res);}).catch(err => console.log(err));
+    return () => {
+      clearInterval(timer);
+    }
+  }, []);
 
   const classes = useStyles();
   return (
@@ -53,7 +59,14 @@ function App(props) {
         </TableHead>
         <TableBody>
           {
-            state.customers ? state.customers.map(c => { return (<Customer key={c.id} id={c.id} image={c.image} name={c.name} birthday={c.birthday} gender={c.gender} job={c.job}></Customer>)}) : ""
+            customers ? customers.map(c => {
+               return (<Customer key={c.id} id={c.id} image={c.image} name={c.name} birthday={c.birthday} gender={c.gender} job={c.job}></Customer>)
+              }) : 
+              <TableRow>
+                <TableCell colSpan="6" align='center'>
+                  <CircularProgress variant='indeterminate' value={completed} />
+                </TableCell>
+              </TableRow>
           }
         </TableBody>
       </Table>
