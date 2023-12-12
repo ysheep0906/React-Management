@@ -1,4 +1,5 @@
 import Customer from './components/Customer';
+import CustomerAdd from './components/CustomerAdd';
 import './App.css';
 import Paper from '@mui/material/Paper'
 import Table from '@mui/material/Table';
@@ -45,32 +46,42 @@ function App() {
     }
   }, []);
 
+  const stateRefresh = () => {
+    setCustomers("");
+    setCompleted(0);
+    callApi().then(res => { setCustomers(res);}).catch(err => console.log(err));
+  }
+
   const classes = useStyles();
   return (
-    <Paper className={classes.root}>
-      <Table className={classes.table}>
-        <TableHead>
-          <TableCell>번호</TableCell>
-          <TableCell>이미지</TableCell>
-          <TableCell>이름</TableCell>
-          <TableCell>생년월일</TableCell>
-          <TableCell>성별</TableCell>
-          <TableCell>직업</TableCell>
-        </TableHead>
-        <TableBody>
-          {
-            customers ? customers.map(c => {
-               return (<Customer key={c.id} id={c.id} image={c.image} name={c.name} birthday={c.birthday} gender={c.gender} job={c.job}></Customer>)
-              }) : 
-              <TableRow>
-                <TableCell colSpan="6" align='center'>
-                  <CircularProgress variant='indeterminate' value={completed} />
-                </TableCell>
-              </TableRow>
-          }
-        </TableBody>
-      </Table>
-    </Paper>
+    <div>
+      <Paper className={classes.root}>
+        <Table className={classes.table}>
+          <TableHead>
+            <TableCell>번호</TableCell>
+            <TableCell>이미지</TableCell>
+            <TableCell>이름</TableCell>
+            <TableCell>생년월일</TableCell>
+            <TableCell>성별</TableCell>
+            <TableCell>직업</TableCell>
+            <TableCell>설정</TableCell>
+          </TableHead>
+          <TableBody>
+            {
+              customers ? customers.map(c => {
+                return (<Customer stateRefresh={stateRefresh} key={c.id} id={c.id} image={c.image} name={c.name} birthday={c.birthday} gender={c.gender} job={c.job}></Customer>)
+              }) :
+                <TableRow>
+                  <TableCell colSpan="6" align='center'>
+                    <CircularProgress variant='indeterminate' value={completed} />
+                  </TableCell>
+                </TableRow>
+            }
+          </TableBody>
+        </Table>
+      </Paper>
+      <CustomerAdd stateRefresh={stateRefresh}></CustomerAdd>
+    </div>
   );
 }
 
