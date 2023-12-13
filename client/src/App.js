@@ -89,6 +89,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 function App() {
   const [customers, setCustomers] = useState("");
   const [completed, setCompleted] = useState(0);
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const callApi= async () => {
     const res = await fetch('/api/customers');
@@ -109,11 +110,26 @@ function App() {
   const stateRefresh = () => {
     setCustomers("");
     setCompleted(0);
+    setSearchKeyword("");
     callApi().then(res => { setCustomers(res);}).catch(err => console.log(err));
+  }
+
+  const handleValueChange = (event) => {
+    setSearchKeyword(event.target.value);
+  }
+
+  const filteredComponents = (data) => {
+    data = data.filter((c) => {
+      return c.name.indexOf(searchKeyword) > -1;
+    });
+    return data.map((c) => {
+      return <Customer stateRefresh={stateRefresh} key={c.id} id={c.id} name={c.name} image={c.image} birthday={c.birthday} gender={c.gender} job={c.job}></Customer>
+    })
   }
 
   const classes = useStyles();
   const cellList = ["번호", "이미지", "이름", "생년월일", "성별", "직업", "설정"];
+  
   return (
     <div className={classes.root}>
       <Box sx={{ flexGrow: 1 }}>
@@ -143,6 +159,9 @@ function App() {
               <StyledInputBase
                 placeholder="검색하기"
                 inputProps={{ 'aria-label': 'search' }}
+                name="searchKeyword"
+                value={searchKeyword}
+                onChange={handleValueChange}
               />
             </Search>
           </Toolbar>
@@ -162,9 +181,7 @@ function App() {
           </TableHead>
           <TableBody>
             {
-              customers ? customers.map(c => {
-                return (<Customer stateRefresh={stateRefresh} key={c.id} id={c.id} image={c.image} name={c.name} birthday={c.birthday} gender={c.gender} job={c.job}></Customer>)
-              }) :
+              customers ? filteredComponents(customers) :
                 <TableRow>
                   <TableCell colSpan="6" align='center'>
                     <CircularProgress variant='indeterminate' value={completed} />
